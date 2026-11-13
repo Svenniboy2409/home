@@ -39,6 +39,8 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --gutter: max(16px, env(safe-area-inset-left));
   --radius: 24px;
+  --vt-dur: 0.6s;
+  --vt-ease: cubic-bezier(0.3, 0.9, 0.2, 1);
 
   color-scheme: dark;
 }
@@ -485,7 +487,16 @@ main { flex: 1; }
    Sections + grid cards
    ========================================================================== */
 
-.view-grid { padding-bottom: 32px; }
+.view-list { padding-bottom: 32px; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .section + .section { margin-top: clamp(36px, 6vh, 56px); }
 
@@ -600,7 +611,7 @@ main { flex: 1; }
   width: 64px;
   height: 64px;
   flex: none;
-  border-radius: 18px;
+  border-radius: 28%;
   overflow: hidden;
   box-shadow:
     0 14px 30px -10px color-mix(in srgb, var(--accent) 70%, transparent),
@@ -761,7 +772,6 @@ main { flex: 1; }
 .card--game .card-icon {
   width: 124px;
   height: 124px;
-  border-radius: 32px;
 }
 .card--game .card-body { margin-top: 0; align-self: stretch; }
 .card--game .card-title { font-size: 1.7rem; }
@@ -782,7 +792,8 @@ main { flex: 1; }
   transition: transform 0.45s var(--ease-spring), box-shadow 0.4s;
 }
 .card-play svg { width: 14px; height: 14px; fill: currentColor; }
-.card--game:hover .card-play { transform: scale(1.06); box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--accent) 95%, transparent); }
+.card--game:hover .card-play,
+.tile--game:hover .card-play { transform: scale(1.06); box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--accent) 95%, transparent); }
 .card--game .card-meta { padding-top: 20px; }
 
 .scene {
@@ -820,12 +831,97 @@ main { flex: 1; }
   85% { opacity: calc(var(--o, 0.3) * var(--boost, 1)); }
   100% { transform: translateY(-300px) rotate(220deg); opacity: 0; }
 }
-.card--game:hover .scene { --boost: 2; }
+.card--game:hover .scene,
+.tile--game:hover .scene { --boost: 2; }
 
 /* launching state */
 .card.launching,
 .planet.launching { z-index: 5; }
 .card.launching { --lift: -10px; transform: perspective(900px) translateY(-10px) scale(1.04); }
+
+
+/* ---------- tiles (bento): small app tiles, big 2×2 game tiles ---------- */
+
+.view-tiles {
+  container-type: inline-size;
+  padding-bottom: 32px;
+}
+.tiles {
+  --gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: calc((100cqw - 3 * var(--gap)) / 4 * 0.8);
+  grid-auto-flow: row dense;
+  gap: var(--gap);
+}
+.tile {
+  justify-content: space-between;
+  min-height: 0;
+  padding: 20px;
+  overflow: hidden;
+}
+.tile .card-icon {
+  width: clamp(48px, 6cqw, 72px);
+  height: clamp(48px, 6cqw, 72px);
+}
+.tile-body { display: flex; flex-direction: column; min-width: 0; }
+.tile .card-title { font-size: clamp(1.1rem, 1.9cqw, 1.4rem); }
+.tile-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  margin-top: 10px;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+}
+.tile-meta .card-recent { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-meta .card-key { margin-left: auto; }
+.tile-meta .card-go { margin-left: 0; }
+
+.tile--game {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: clamp(22px, 3cqw, 34px);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 55%),
+    radial-gradient(120% 120% at 100% 100%, color-mix(in srgb, var(--accent2) 20%, transparent), transparent 60%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+}
+.tile--game .card-icon {
+  width: clamp(88px, 13cqw, 156px);
+  height: clamp(88px, 13cqw, 156px);
+}
+.tile--game .card-title { font-size: clamp(1.5rem, 3cqw, 2.3rem); }
+.tile--game .card-desc { max-width: 40ch; font-size: clamp(0.9rem, 1.3cqw, 1rem); }
+.tile--game .tile-meta { margin-top: 18px; }
+
+/* narrower than ~960px: two columns (games full width, apps in pairs) */
+@container (max-width: 959px) {
+  .tiles {
+    --gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: min(calc((100cqw - var(--gap)) / 2 * 0.86), 210px);
+  }
+  .tile { padding: 14px; }
+  .tile .card-icon { width: clamp(44px, 12cqw, 72px); height: clamp(44px, 12cqw, 72px); }
+  .tile .card-title { font-size: clamp(1rem, 4cqw, 1.4rem); }
+  .tile .card-kicker { font-size: 0.62rem; letter-spacing: 0.1em; }
+  .tile .fav { top: 6px; right: 6px; }
+  .tile--app .card-recent,
+  .tile--app .card-go { display: none; }
+  .tile-meta { min-height: 0; margin-top: 6px; }
+  .tile--game { padding: 20px; }
+  .tile--game .card-icon { width: clamp(72px, 22cqw, 140px); height: clamp(72px, 22cqw, 140px); }
+  .tile--game .card-title { font-size: clamp(1.3rem, 6cqw, 2rem); }
+  .tile--game .card-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .tile--game .tile-meta { margin-top: 12px; }
+}
 
 /* ==========================================================================
    Orbit view
@@ -839,10 +935,6 @@ main { flex: 1; }
   width: 100%;
   height: var(--orbit-h, 620px);
   margin: 0 auto;
-  animation: orbit-in 1s var(--ease-out) both;
-}
-@keyframes orbit-in {
-  from { opacity: 0; transform: scale(0.92); }
 }
 .orbit-rings {
   position: absolute;
@@ -1032,6 +1124,11 @@ main { flex: 1; }
   font-size: 0.84rem;
 }
 .orbit-hint .touch { display: none; }
+@media (max-width: 419px) {
+  /* three view buttons need the room: keep just the Starport mark */
+  .brand-name { display: none; }
+}
+
 @media (hover: none) {
   .orbit-hint .touch { display: inline; }
   .orbit-hint .mouse { display: none; }
@@ -1241,7 +1338,10 @@ body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
 }
 
 .views { view-transition-name: views; }
-::view-transition-group(*) { animation-duration: 0.55s; animation-timing-function: cubic-bezier(0.3, 0.9, 0.2, 1); }
+::view-transition-group(*) { animation-duration: var(--vt-dur); animation-timing-function: var(--vt-ease); }
+/* flying icons change shape on the way: rounded square (cards, tiles) ↔ circle (planets) */
+@keyframes vt-round { from { border-radius: 28%; } to { border-radius: 50%; } }
+@keyframes vt-square { from { border-radius: 50%; } to { border-radius: 28%; } }
 ::view-transition-old(views) { animation: 0.3s ease both vt-out; }
 ::view-transition-new(views) { animation: 0.5s var(--ease-out) 0.05s both vt-in; }
 ::view-transition-old(sky),
@@ -1267,7 +1367,12 @@ body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
 @media (max-width: 640px) {
   .brand-name { font-size: 0.98rem; letter-spacing: 0.24em; }
   .view-switch button span { display: none; }
-  .view-switch button { padding: 0 12px; }
+  .view-switch button { padding: 0 10px; }
+  .search-btn,
+  .sound-btn,
+  .view-switch { height: 40px; }
+  .search-btn,
+  .sound-btn { width: 40px; }
   .controls { gap: 8px; }
 
   .grid-apps { grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -1278,7 +1383,7 @@ body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
     gap: 14px;
     padding: 16px 16px 16px 16px;
   }
-  .card--app .card-icon { width: 56px; height: 56px; border-radius: 16px; }
+  .card--app .card-icon { width: 56px; height: 56px; }
   .card--app .card-body { margin-top: 0; padding-right: 30px; }
   .card--app .card-title { font-size: 1.18rem; }
   .card--app .card-desc {
@@ -1303,7 +1408,7 @@ body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
     min-height: 0;
     padding: 22px;
   }
-  .card--game .card-icon { width: 84px; height: 84px; border-radius: 24px; }
+  .card--game .card-icon { width: 84px; height: 84px; }
   .card--game .card-title { font-size: 1.45rem; }
 
   .footer { justify-content: center; text-align: center; }

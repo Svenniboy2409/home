@@ -39,7 +39,11 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matc
 const state = {
   favourites: new Set(store.get('favorites', []).filter(byId)),
   recent: store.get('recent', {}),
-  view: store.get('view', 'grid') === 'orbit' ? 'orbit' : 'grid',
+  view: (() => {
+    const v = store.get('view', 'list');
+    if (v === 'grid') return 'list'; // the list view used to be called "grid"
+    return ['list', 'tiles', 'orbit'].includes(v) ? v : 'list';
+  })(),
   caught: Number(store.get('starsCaught', 0)) || 0,
   launching: false,
 };
@@ -119,7 +123,52 @@ function cardHTML(d, index) {
     </article>`;
 }
 
+/** A tile for the bento view: apps are small tiles, games big 2×2 tiles. */
+function tileHTML(d, index) {
+  const game = d.kind === 'game';
+  const fav = state.favourites.has(d.id);
+  return `
+    <article class="card tile tile--${d.kind}${fav ? ' is-fav' : ''}" data-id="${d.id}"
+             style="--accent:${d.accent};--accent2:${d.accent2};--i:${index}">
+      <span class="card-glow" aria-hidden="true"></span>
+      ${game ? sceneHTML(d.scene || 'stars') : ''}
+      <div class="card-icon" style="view-transition-name: icon-${d.id}">
+        <img src="${esc(d.icon)}" alt="" width="128" height="128" decoding="async" />
+      </div>
+      <div class="tile-body">
+        <p class="card-kicker">${esc(d.kicker)}</p>
+        <h3 class="card-title"><a class="card-link" href="${esc(d.url)}" data-launch="${d.id}">${esc(d.name)}</a></h3>
+        ${game ? `<p class="card-desc">${esc(d.desc)}</p>` : ''}
+        <div class="tile-meta">
+          ${game ? `<span class="card-play">Play now ${ICON_PLAY}</span>` : ''}
+          <span class="card-recent"></span>
+          <kbd class="card-key" title="Keyboard shortcut">${shortcutOf(d)}</kbd>
+          ${game ? '' : `<span class="card-go" aria-hidden="true">${ICON_ARROW}</span>`}
+        </div>
+      </div>
+      <button class="fav" type="button" aria-pressed="${fav}" aria-label="${fav ? 'Unpin' : 'Pin'} ${esc(d.name)} ${fav ? 'from' : 'to'} favourites">
+        ${ICON_STAR}<span class="fav-burst" aria-hidden="true"></span>
+      </button>
+    </article>`;
+}
+
 const grids = { app: $('#appsGrid'), game: $('#gamesGrid') };
+const tilesGrid = $('#tilesGrid');
+
+/**
+ * Tile order: one game, two apps, one game, two apps… With the CSS grid packing
+ * densely this gives the diagonal bento (game top-left, game bottom-right).
+ */
+function tilesOrder() {
+  const games = sorted(destinations.filter((d) => d.kind === 'game'));
+  const apps = sorted(destinations.filter((d) => d.kind === 'app'));
+  const out = [];
+  while (games.length || apps.length) {
+    if (games.length) out.push(games.shift());
+    out.push(...apps.splice(0, 2));
+  }
+  return out;
+}
 
 function sorted(list) {
   return [...list].sort((a, b) => {
@@ -131,25 +180,25 @@ function sorted(list) {
 
 function renderGrids() {
   let i = 0;
-  for (const kind of ['app', 'game']) {
+  for (const kind of ['game', 'app']) {
     const list = sorted(destinations.filter((d) => d.kind === kind));
     grids[kind].innerHTML = list.map((d) => cardHTML(d, i++)).join('');
   }
+  tilesGrid.innerHTML = tilesOrder()
+    .map((d, n) => tileHTML(d, n))
+    .join('');
   const appsN = destinations.filter((d) => d.kind === 'app').length;
   const gamesN = destinations.filter((d) => d.kind === 'game').length;
   $('#appsCount').textContent = `${appsN} destinations`;
   $('#gamesCount').textContent = `${gamesN} worlds to explore`;
 }
 
-/** Reorder cards inside a grid by favourites, animating the move (FLIP). */
-function reorder(kind) {
-  const grid = grids[kind];
-  const cards = [...grid.children];
-  const first = new Map(cards.map((c) => [c.dataset.id, c.getBoundingClientRect()]));
-  const order = sorted(destinations.filter((d) => d.kind === kind));
-  order.forEach((d) => grid.appendChild(grid.querySelector(`[data-id="${d.id}"]`)));
+/** Put the cards of a container in a new order, animating the move (FLIP). */
+function flipReorder(container, order) {
+  const first = new Map([...container.children].map((c) => [c.dataset.id, c.getBoundingClientRect()]));
+  order.forEach((d) => container.appendChild(container.querySelector(`[data-id="${d.id}"]`)));
   if (reducedMotion) return;
-  for (const card of grid.children) {
+  for (const card of container.children) {
     const a = first.get(card.dataset.id);
     const b = card.getBoundingClientRect();
     const dx = a.left - b.left;
@@ -161,6 +210,12 @@ function reorder(kind) {
       });
     }
   }
+}
+
+/** Favourites go first: re-sort the list section of this kind and the tiles. */
+function reorder(kind) {
+  flipReorder(grids[kind], sorted(destinations.filter((d) => d.kind === kind)));
+  flipReorder(tilesGrid, tilesOrder());
 }
 
 function ago(ts) {
@@ -248,10 +303,13 @@ function toggleFavourite(d, button) {
   else state.favourites.delete(d.id);
   store.set('favorites', [...state.favourites]);
 
-  const card = button.closest('.card');
-  card.classList.toggle('is-fav', on);
-  button.setAttribute('aria-pressed', String(on));
-  button.setAttribute('aria-label', `${on ? 'Unpin' : 'Pin'} ${d.name} ${on ? 'from' : 'to'} favourites`);
+  // the same destination appears in the list and in the tiles: keep both in sync
+  document.querySelectorAll(`.card[data-id="${d.id}"]`).forEach((card) => {
+    card.classList.toggle('is-fav', on);
+    const b = card.querySelector('.fav');
+    b.setAttribute('aria-pressed', String(on));
+    b.setAttribute('aria-label', `${on ? 'Unpin' : 'Pin'} ${d.name} ${on ? 'from' : 'to'} favourites`);
+  });
   if (on && !reducedMotion) {
     button.classList.remove('pop');
     void button.offsetWidth;
@@ -294,33 +352,58 @@ function syncSwitch() {
   viewSwitch.style.setProperty('--thumb-w', `${btn.offsetWidth}px`);
 }
 
+const VIEWS = ['list', 'tiles', 'orbit'];
+const viewEls = { list: $('#viewList'), tiles: $('#viewTiles'), orbit: $('#viewOrbit') };
+
 function applyView() {
-  $('#viewGrid').hidden = state.view !== 'grid';
-  $('#viewOrbit').hidden = state.view !== 'orbit';
+  for (const v of VIEWS) viewEls[v].hidden = state.view !== v;
   document.body.classList.toggle('is-orbit', state.view === 'orbit');
   if (state.view === 'orbit') orbit.start();
   else orbit.stop();
 }
 
+/*
+ * Icons fly from card to tile to planet with a view transition. Square icons
+ * and round planets differ in shape, so the clip of each flying icon is
+ * animated from rounded-square to circle (or back). The selectors name each
+ * icon, so they are generated from the destination list.
+ */
+{
+  const pairs = (mode) => destinations.map((d) => `:root[data-vt="${mode}"]::view-transition-image-pair(icon-${d.id})`).join(',\n');
+  const style = document.createElement('style');
+  style.textContent = `
+${pairs('round')} { overflow: clip; animation: vt-round var(--vt-dur) var(--vt-ease) both; }
+${pairs('square')} { overflow: clip; animation: vt-square var(--vt-dur) var(--vt-ease) both; }`;
+  document.head.appendChild(style);
+}
+
 function setView(view) {
-  if (view === state.view) return;
+  if (view === state.view || !VIEWS.includes(view)) return;
+  const from = state.view;
   state.view = view;
   store.set('view', view);
   syncSwitch();
   if (document.startViewTransition && !reducedMotion) {
+    const root = document.documentElement;
+    root.dataset.vt = view === 'orbit' ? 'round' : from === 'orbit' ? 'square' : 'same';
     const vt = document.startViewTransition(applyView);
     // a transition can be skipped (e.g. the window resized mid-way); the view still switches
     vt.ready.catch(() => {});
-    vt.finished.catch(() => {});
+    vt.finished.catch(() => {}).finally(() => delete root.dataset.vt);
   } else {
     applyView();
-    const el = view === 'orbit' ? $('#viewOrbit') : $('#viewGrid');
+    const el = viewEls[view];
     if (!reducedMotion) {
       el.classList.remove('view-enter');
       void el.offsetWidth;
       el.classList.add('view-enter');
     }
   }
+}
+
+function stepView(step) {
+  const i = VIEWS.indexOf(state.view);
+  setView(VIEWS[(i + step + VIEWS.length) % VIEWS.length]);
 }
 
 viewSwitch.addEventListener('click', (e) => {
@@ -330,7 +413,7 @@ viewSwitch.addEventListener('click', (e) => {
 viewSwitch.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     e.preventDefault();
-    setView(state.view === 'grid' ? 'orbit' : 'grid');
+    stepView(e.key === 'ArrowRight' ? 1 : -1);
     viewSwitch.querySelector(`[data-view="${state.view}"]`).focus();
   }
 });
@@ -345,7 +428,7 @@ document.fonts?.ready.then(syncSwitch);
 
 function originFor(d) {
   if (state.view === 'orbit') return orbit.elementFor(d.id);
-  return document.querySelector(`.card[data-id="${d.id}"]`);
+  return viewEls[state.view].querySelector(`.card[data-id="${d.id}"]`);
 }
 
 function remember(d) {
@@ -598,7 +681,7 @@ document.addEventListener('keydown', (e) => {
     const d = destinations[Number(e.key) - 1];
     if (d) launch(d, originFor(d), null);
   } else if (e.key === 'v' || e.key === 'V') {
-    setView(state.view === 'grid' ? 'orbit' : 'grid');
+    stepView(1);
   } else if (e.key === 'm' || e.key === 'M') {
     setSound(!sound.isEnabled());
   }

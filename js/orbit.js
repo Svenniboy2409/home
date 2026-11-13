@@ -22,7 +22,7 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     const ring = d.kind === 'game';
     return `
       ${ring ? '<span class="planet-ring back" aria-hidden="true"></span>' : ''}
-      <span class="planet-body"><img src="${esc(d.icon)}" alt="" style="view-transition-name: icon-${d.id}" /></span>
+      <span class="planet-body" style="view-transition-name: icon-${d.id}"><img src="${esc(d.icon)}" alt="" /></span>
       ${ring ? '<span class="planet-ring front" aria-hidden="true"></span>' : ''}
       <span class="planet-label">${esc(d.name)}<small>${esc(d.kicker)}</small></span>`;
   }
