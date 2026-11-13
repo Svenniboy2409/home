@@ -19,6 +19,34 @@
  */
 export const destinations = [
   {
+    id: 'wonderland',
+    name: 'Super Mario Wonderland',
+    kicker: 'Platform Game',
+    // TODO: your own description
+    desc: 'A colourful platform adventure, right in your browser. Run, jump and explore.',
+    url: 'https://super-mario-wonderland.web.app',
+    icon: 'assets/games/wonderland.svg',
+    accent: '#ff8a5c',
+    accent2: '#ffd23f',
+    kind: 'game',
+    keywords: ['mario', 'platformer', 'jump', 'adventure', 'game'],
+    scene: 'stars',
+  },
+  {
+    id: 'boardgames',
+    name: 'DIY Board Games',
+    kicker: 'Board Game Collection',
+    // TODO: your own description
+    desc: 'Roll the dice: a collection of board games to play together online.',
+    url: 'https://diy-board-games.web.app',
+    icon: 'assets/games/boardgames.svg',
+    accent: '#2dd4bf',
+    accent2: '#8b7bff',
+    kind: 'game',
+    keywords: ['board', 'dice', 'party', 'friends', 'game'],
+    scene: 'dice',
+  },
+  {
     id: 'scent',
     name: 'Scent',
     kicker: 'Perfume Collection',
@@ -65,33 +93,5 @@ export const destinations = [
     accent2: '#fbe7b5',
     kind: 'app',
     keywords: ['ice cream', 'gelato', 'sorbet', 'ninja', 'dessert', 'recipes'],
-  },
-  {
-    id: 'wonderland',
-    name: 'Super Mario Wonderland',
-    kicker: 'Platform Game',
-    // TODO: your own description
-    desc: 'A colourful platform adventure, right in your browser. Run, jump and explore.',
-    url: 'https://super-mario-wonderland.web.app',
-    icon: 'assets/games/wonderland.svg',
-    accent: '#ff8a5c',
-    accent2: '#ffd23f',
-    kind: 'game',
-    keywords: ['mario', 'platformer', 'jump', 'adventure', 'game'],
-    scene: 'stars',
-  },
-  {
-    id: 'boardgames',
-    name: 'DIY Board Games',
-    kicker: 'Board Game Collection',
-    // TODO: your own description
-    desc: 'Roll the dice: a collection of board games to play together online.',
-    url: 'https://diy-board-games.web.app',
-    icon: 'assets/games/boardgames.svg',
-    accent: '#2dd4bf',
-    accent2: '#8b7bff',
-    kind: 'game',
-    keywords: ['board', 'dice', 'party', 'friends', 'game'],
-    scene: 'dice',
   },
 ];

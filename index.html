@@ -52,9 +52,13 @@
 
         <div class="view-switch" id="viewSwitch" role="radiogroup" aria-label="Layout">
           <span class="view-switch-thumb" aria-hidden="true"></span>
-          <button type="button" role="radio" aria-checked="true" data-view="grid" aria-label="Grid view">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="2" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2" /></svg>
-            <span>Grid</span>
+          <button type="button" role="radio" aria-checked="true" data-view="list" aria-label="List view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="2" /><rect x="4" y="13.5" width="7" height="6" rx="2" /><rect x="13" y="13.5" width="7" height="6" rx="2" /></svg>
+            <span>List</span>
+          </button>
+          <button type="button" role="radio" aria-checked="false" data-view="tiles" aria-label="Tiles view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="9.5" height="9.5" rx="2" /><rect x="16" y="4" width="4" height="4" rx="1.3" /><rect x="16" y="10" width="4" height="4" rx="1.3" /><rect x="4" y="16" width="4" height="4" rx="1.3" /><rect x="10.5" y="16" width="9.5" height="4" rx="1.3" /></svg>
+            <span>Tiles</span>
           </button>
           <button type="button" role="radio" aria-checked="false" data-view="orbit" aria-label="Orbit view">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" /><ellipse cx="12" cy="12" rx="9.5" ry="4.2" transform="rotate(-20 12 12)" /><circle cx="20.2" cy="8.6" r="1.4" class="fill" /></svg>
@@ -91,16 +95,7 @@
       </section>
 
       <div class="views">
-        <div class="view view-grid" id="viewGrid">
-          <section class="section" aria-labelledby="appsTitle">
-            <div class="section-head">
-              <h2 id="appsTitle">Apps</h2>
-              <span class="section-line" aria-hidden="true"></span>
-              <span class="section-count" id="appsCount"></span>
-            </div>
-            <div class="grid grid-apps" id="appsGrid"></div>
-          </section>
-
+        <div class="view view-list" id="viewList">
           <section class="section" aria-labelledby="gamesTitle">
             <div class="section-head">
               <h2 id="gamesTitle">Games</h2>
@@ -109,6 +104,20 @@
             </div>
             <div class="grid grid-games" id="gamesGrid"></div>
           </section>
+
+          <section class="section" aria-labelledby="appsTitle">
+            <div class="section-head">
+              <h2 id="appsTitle">Apps</h2>
+              <span class="section-line" aria-hidden="true"></span>
+              <span class="section-count" id="appsCount"></span>
+            </div>
+            <div class="grid grid-apps" id="appsGrid"></div>
+          </section>
+        </div>
+
+        <div class="view view-tiles" id="viewTiles" hidden>
+          <h2 class="visually-hidden">All destinations</h2>
+          <div class="tiles" id="tilesGrid"></div>
         </div>
 
         <div class="view view-orbit" id="viewOrbit" hidden>
