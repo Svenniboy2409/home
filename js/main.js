@@ -399,6 +399,10 @@ async function setView(view) {
   const heroChanges = (from === 'orbit') !== (view === 'orbit');
   orbit.freeze(); // planets hold still while icons fly to or from them
   try {
+    // Saturn rings only show around a planet that sits in its orbit:
+    // they spin away before the icons lift off, and stay hidden while icons arrive
+    if (from === 'orbit') await orbit.hideRings({ speed: slowmo });
+    if (view === 'orbit') orbit.hideRings({ instant: true });
     await flyIcons({
       ids: destinations.map((d) => d.id),
       srcOf: (id) => byId(id).icon,
@@ -413,6 +417,8 @@ async function setView(view) {
     orbit.unfreeze();
     switching = false;
   }
+  // the icons have landed on their planets: now the rings swoop in
+  if (state.view === 'orbit') orbit.showRings({ speed: slowmo });
 
   const next = queuedView;
   queuedView = null;
