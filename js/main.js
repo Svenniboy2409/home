@@ -47,6 +47,7 @@ const state = {
   })(),
   caught: Number(store.get('starsCaught', 0)) || 0,
   launching: false,
+  launchedAt: 0,
 };
 
 // ---------------------------------------------------------------------------
@@ -341,6 +342,7 @@ const orbit = createOrbit({
   ringsSvg: $('#orbitRings'),
   destinations,
   reducedMotion,
+  finePointer,
   getPointer: () => sky.pointer,
 });
 orbit.setFavourites(state.favourites);
@@ -461,51 +463,88 @@ function remember(d) {
   store.set('recent', state.recent);
 }
 
+let safetyTimer = 0;
+
 async function launch(d, originEl, event) {
-  if (state.launching) return;
+  // A launch normally leaves the page within a second. If an earlier one got
+  // stuck (navigation cancelled, page restored), it must never block a new tap.
+  if (state.launching && Date.now() - state.launchedAt < 2500) return;
+  if (state.launching) resetWarp();
   state.launching = true;
+  state.launchedAt = Date.now();
   remember(d);
 
-  const rect = originEl?.getBoundingClientRect();
-  const fromPointer = event && event.detail > 0 && (event.clientX || event.clientY);
-  const x = fromPointer ? event.clientX : rect ? rect.left + rect.width / 2 : innerWidth / 2;
-  const y = fromPointer ? event.clientY : rect ? rect.top + rect.height / 2 : innerHeight / 2;
+  try {
+    const rect = originEl?.getBoundingClientRect();
+    const fromPointer = event && event.detail > 0 && (event.clientX || event.clientY);
+    const x = fromPointer ? event.clientX : rect ? rect.left + rect.width / 2 : innerWidth / 2;
+    const y = fromPointer ? event.clientY : rect ? rect.top + rect.height / 2 : innerHeight / 2;
 
-  const flash = $('#warpFlash');
-  flash.style.setProperty('--ox', `${x}px`);
-  flash.style.setProperty('--oy', `${y}px`);
-  flash.style.setProperty('--flash', d.accent);
+    const flash = $('#warpFlash');
+    flash.style.setProperty('--ox', `${x}px`);
+    flash.style.setProperty('--oy', `${y}px`);
+    flash.style.setProperty('--flash', d.accent);
+    // the page recedes gently towards the spot you tapped
+    const shell = $('#shell');
+    const sr = shell.getBoundingClientRect();
+    shell.style.transformOrigin = `${(x - sr.left).toFixed(0)}px ${(y - sr.top).toFixed(0)}px`;
 
-  // safety net: if navigation never happens (offline, blocked), come back
-  const safety = setTimeout(resetWarp, 8000);
+    // safety net: if navigation never happens (offline, blocked), come back
+    clearTimeout(safetyTimer);
+    safetyTimer = setTimeout(() => resetWarp({ animate: true }), 6000);
 
-  if (reducedMotion) {
-    document.body.classList.add('warping-soft');
-    await wait(260);
-  } else {
-    originEl?.classList.add('launching');
-    sound.whoosh();
-    document.body.classList.add('warping');
-    await sky.warp({ x, y, color: d.accent, duration: 950 });
+    if (reducedMotion) {
+      document.body.classList.add('warping-soft');
+      await wait(260);
+    } else {
+      if (state.view === 'orbit') orbit.freeze(); // the tapped planet holds still
+      originEl?.classList.add('launching');
+      orbit.refresh();
+      try {
+        sound.whoosh();
+      } catch {
+        /* sound is a bonus, never a blocker */
+      }
+      document.body.classList.add('warping');
+      await sky.warp({ x, y, color: d.accent, duration: 950 });
+    }
+  } catch {
+    // an animation problem must never keep you from your app
   }
-  if (state.launching) {
-    window.location.href = d.url;
-  } else {
-    clearTimeout(safety);
-  }
+  if (state.launching) window.location.assign(d.url);
 }
 
-function resetWarp() {
+/** Back to normal. With animate, the page comes back out of the portal. */
+function resetWarp({ animate = false } = {}) {
+  clearTimeout(safetyTimer);
   state.launching = false;
-  document.body.classList.remove('warping', 'warping-soft');
+  const body = document.body;
+  const wasWarped = body.classList.contains('warping') || body.classList.contains('warp-hold');
+  body.classList.remove('warping', 'warping-soft', 'warp-hold');
   document.querySelectorAll('.launching').forEach((el) => el.classList.remove('launching'));
   sky.reset();
+  orbit.unfreeze();
+  orbit.release();
   renderRecent();
+  if (animate && wasWarped && !reducedMotion) {
+    body.classList.remove('warp-return');
+    void body.offsetWidth;
+    body.classList.add('warp-return');
+    setTimeout(() => body.classList.remove('warp-return'), 900);
+  }
 }
 
-// coming back with the browser's Back button restores the page from cache
+// Leaving for an app: the browser may keep this page in its back/forward cache.
+// Park it "inside the flash", so coming back starts where you left…
+window.addEventListener('pagehide', () => {
+  if (!state.launching || reducedMotion) return;
+  document.body.classList.remove('warping');
+  document.body.classList.add('warp-hold');
+  sky.reset();
+});
+// …and then glides back out of the portal instead of freezing on the flash.
 window.addEventListener('pageshow', (e) => {
-  if (e.persisted) resetWarp();
+  if (e.persisted) resetWarp({ animate: true });
 });
 
 document.addEventListener('click', (e) => {

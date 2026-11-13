@@ -232,7 +232,7 @@ kbd {
   animation: bob 6s ease-in-out infinite;
   transition: transform 0.5s var(--ease-spring);
 }
-.brand:hover .brand-mark { transform: rotate(-12deg) scale(1.08); }
+@media (hover: hover) { .brand:hover .brand-mark { transform: rotate(-12deg) scale(1.08); } }
 .brand.boop .brand-mark { animation: boop 0.45s var(--ease-spring); }
 .brand-name {
   font-family: var(--font-display);
@@ -279,7 +279,7 @@ kbd {
   color: var(--ink-soft);
   transition: background-color 0.25s, border-color 0.25s, color 0.25s;
 }
-.search-btn:hover { background: var(--glass-hi); color: var(--ink); border-color: rgba(255, 255, 255, 0.18); }
+@media (hover: hover) { .search-btn:hover { background: var(--glass-hi); color: var(--ink); border-color: rgba(255, 255, 255, 0.18); } }
 .search-btn svg,
 .view-switch svg {
   width: 18px;
@@ -314,7 +314,7 @@ kbd {
   transition: color 0.3s;
 }
 .view-switch button[aria-checked='true'] { color: #0b0d22; }
-.view-switch button:not([aria-checked='true']):hover { color: var(--ink); }
+@media (hover: hover) { .view-switch button:not([aria-checked='true']):hover { color: var(--ink); } }
 .view-switch-thumb {
   position: absolute;
   top: 3px;
@@ -335,7 +335,7 @@ kbd {
   cursor: pointer;
   transition: background-color 0.25s, border-color 0.25s;
 }
-.sound-btn:hover { background: var(--glass-hi); }
+@media (hover: hover) { .sound-btn:hover { background: var(--glass-hi); } }
 .spk {
   width: 20px;
   height: 20px;
@@ -350,7 +350,7 @@ kbd {
 .spk-body { fill: currentColor; fill-opacity: 0.25; }
 .spk .w1,
 .spk .w2 { opacity: 0; transition: opacity 0.3s; }
-.sound-btn:hover .spk { color: var(--ink); }
+@media (hover: hover) { .sound-btn:hover .spk { color: var(--ink); } }
 .sound-btn[aria-pressed='true'] { border-color: color-mix(in srgb, var(--a2) 50%, transparent); }
 .sound-btn[aria-pressed='true'] .spk { color: color-mix(in srgb, var(--a2) 70%, white); }
 .sound-btn[aria-pressed='true'] .spk .x { opacity: 0; }
@@ -472,11 +472,11 @@ main { flex: 1; }
   font-size: 0.88rem;
   transition: transform 0.3s var(--ease-spring), border-color 0.3s, background-color 0.3s;
 }
-.recent-pill:hover {
+@media (hover: hover) { .recent-pill:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
-}
+} }
 .recent-pill img { width: 24px; height: 24px; border-radius: 7px; object-fit: cover; }
 .recent-pill small { color: var(--ink-faint); font-size: 0.78rem; }
 
@@ -553,7 +553,6 @@ main { flex: 1; }
   animation-delay: calc(0.35s + var(--i, 0) * 0.08s);
 }
 .card.tilting { transition: transform 0.12s linear, box-shadow 0.5s var(--ease-out), border-color 0.4s; }
-.card:hover,
 .card:focus-within {
   --lift: -6px;
   border-color: transparent;
@@ -562,6 +561,14 @@ main { flex: 1; }
     0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
+@media (hover: hover) { .card:hover {
+  --lift: -6px;
+  border-color: transparent;
+  box-shadow:
+    0 30px 60px -24px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+} }
 
 /* gradient border */
 .card::before {
@@ -578,8 +585,8 @@ main { flex: 1; }
   opacity: 0;
   transition: opacity 0.4s;
 }
-.card:hover::before,
 .card:focus-within::before { opacity: 1; }
+@media (hover: hover) { .card:hover::before { opacity: 1; } }
 
 /* spotlight that follows the pointer */
 .card-glow {
@@ -593,7 +600,7 @@ main { flex: 1; }
   transition: opacity 0.4s;
   pointer-events: none;
 }
-.card:hover .card-glow { opacity: 1; }
+@media (hover: hover) { .card:hover .card-glow { opacity: 1; } }
 
 .card.is-fav {
   box-shadow:
@@ -617,7 +624,7 @@ main { flex: 1; }
   animation-delay: calc(var(--i, 0) * -1.3s);
   transition: scale 0.5s var(--ease-spring);
 }
-.card:hover .card-icon { scale: 1.08; }
+@media (hover: hover) { .card:hover .card-icon { scale: 1.08; } }
 .card-icon img { width: 100%; height: 100%; object-fit: cover; }
 @keyframes float {
   0%, 100% { translate: 0 0; }
@@ -693,12 +700,12 @@ main { flex: 1; }
   transition: background-color 0.35s, border-color 0.35s, transform 0.45s var(--ease-spring), color 0.35s;
 }
 .card-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.card:hover .card-go {
+@media (hover: hover) { .card:hover .card-go {
   background: linear-gradient(135deg, var(--accent2), var(--accent));
   border-color: transparent;
   color: #140d1f;
   transform: translateX(4px) rotate(-45deg);
-}
+} }
 
 /* favourite star */
 .fav {
@@ -719,9 +726,9 @@ main { flex: 1; }
   transition: opacity 0.3s, color 0.3s, background-color 0.3s, transform 0.4s var(--ease-spring);
   -webkit-tap-highlight-color: transparent;
 }
-.card:hover .fav,
 .fav:focus-visible { opacity: 1; }
-.fav:hover { background: rgba(255, 255, 255, 0.08); color: var(--ink); transform: scale(1.1); }
+@media (hover: hover) { .card:hover .fav { opacity: 1; } }
+@media (hover: hover) { .fav:hover { background: rgba(255, 255, 255, 0.08); color: var(--ink); transform: scale(1.1); } }
 .fav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; transition: fill 0.3s; }
 .fav[aria-pressed='true'] { opacity: 1; color: var(--gold); }
 .fav[aria-pressed='true'] svg { fill: var(--gold); filter: drop-shadow(0 0 6px rgba(255, 215, 106, 0.7)); }
@@ -789,8 +796,7 @@ main { flex: 1; }
   transition: transform 0.45s var(--ease-spring), box-shadow 0.4s;
 }
 .card-play svg { width: 14px; height: 14px; fill: currentColor; }
-.card--game:hover .card-play,
-.tile--game:hover .card-play { transform: scale(1.06); box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--accent) 95%, transparent); }
+@media (hover: hover) { .card--game:hover .card-play, .tile--game:hover .card-play { transform: scale(1.06); box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--accent) 95%, transparent); } }
 .card--game .card-meta { padding-top: 20px; }
 
 .scene {
@@ -828,8 +834,7 @@ main { flex: 1; }
   85% { opacity: calc(var(--o, 0.3) * var(--boost, 1)); }
   100% { transform: translateY(-300px) rotate(220deg); opacity: 0; }
 }
-.card--game:hover .scene,
-.tile--game:hover .scene { --boost: 2; }
+@media (hover: hover) { .card--game:hover .scene, .tile--game:hover .scene { --boost: 2; } }
 
 /* launching state */
 .card.launching,
@@ -968,7 +973,7 @@ main { flex: 1; }
   animation: bob 6s ease-in-out infinite;
   transition: transform 0.5s var(--ease-spring);
 }
-.station:hover img { transform: scale(1.06) rotate(-6deg); }
+@media (hover: hover) { .station:hover img { transform: scale(1.06) rotate(-6deg); } }
 .station.boop img { animation: boop 0.45s var(--ease-spring); }
 .station-halo {
   position: absolute;
@@ -1027,7 +1032,6 @@ main { flex: 1; }
     radial-gradient(circle at 74% 78%, rgba(4, 6, 20, 0.62), transparent 62%);
   box-shadow: inset -6px -8px 18px rgba(0, 0, 0, 0.35), inset 3px 4px 10px rgba(255, 255, 255, 0.12);
 }
-.planet:hover .planet-body,
 .planet:focus-visible .planet-body {
   transform: scale(1.12);
   box-shadow:
@@ -1035,6 +1039,13 @@ main { flex: 1; }
     0 0 30px 6px color-mix(in srgb, var(--accent) 75%, transparent),
     0 0 90px 14px color-mix(in srgb, var(--accent) 35%, transparent);
 }
+@media (hover: hover) { .planet:hover .planet-body {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent2) 70%, white),
+    0 0 30px 6px color-mix(in srgb, var(--accent) 75%, transparent),
+    0 0 90px 14px color-mix(in srgb, var(--accent) 35%, transparent);
+} }
 
 .planet-ring {
   position: absolute;
@@ -1084,14 +1095,18 @@ main { flex: 1; }
   color: color-mix(in srgb, var(--accent2) 72%, white);
   animation: fade 0.3s ease;
 }
-.planet:hover .planet-label,
 .planet:focus-visible .planet-label {
   opacity: 1;
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background: color-mix(in srgb, var(--accent) 22%, color-mix(in srgb, var(--base) 70%, transparent));
 }
-.planet:hover .planet-label small,
+@media (hover: hover) { .planet:hover .planet-label {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, color-mix(in srgb, var(--base) 70%, transparent));
+} }
 .planet:focus-visible .planet-label small { display: block; }
+@media (hover: hover) { .planet:hover .planet-label small { display: block; } }
 
 .planet-moon {
   position: absolute;
@@ -1286,27 +1301,44 @@ body.is-orbit .recent { margin-top: 18px; }
    ========================================================================== */
 
 .warp-flash {
+  /* much bigger than the screen, so it also fills the space behind the browser's
+     toolbars and any overscroll: no hard edges anywhere */
   position: fixed;
-  inset: 0;
+  inset: -50vmax;
   z-index: 200;
   pointer-events: none;
   opacity: 0;
   background:
-    radial-gradient(circle at var(--ox, 50%) var(--oy, 50%),
+    radial-gradient(circle 80vmax at calc(var(--ox, 50vw) + 50vmax) calc(var(--oy, 50vh) + 50vmax),
       #ffffff 0%,
-      color-mix(in srgb, var(--flash, #9fe8ff) 70%, white) 18%,
-      color-mix(in srgb, var(--flash, #9fe8ff) 60%, var(--base)) 55%,
+      color-mix(in srgb, var(--flash, #9fe8ff) 70%, white) 16%,
+      color-mix(in srgb, var(--flash, #9fe8ff) 60%, var(--base)) 50%,
       var(--base) 100%);
 }
-body.warping .shell { animation: warp-out 0.8s cubic-bezier(0.45, 0, 0.75, 0.5) 0.05s forwards; pointer-events: none; }
-body.warping .aurora { filter: brightness(1.5) saturate(1.3); transform: scale(1.25); transition: transform 1s cubic-bezier(0.55, 0, 0.85, 0.35), filter 1s; }
+/* the page fades and drifts a little towards the tapped spot; the stars do the big motion */
+body.warping .shell { animation: warp-out 0.75s cubic-bezier(0.45, 0, 0.75, 0.5) 0.05s forwards; pointer-events: none; }
+body.warping .aurora { filter: brightness(1.4) saturate(1.25); transform: scale(1.08); transition: transform 1s cubic-bezier(0.55, 0, 0.85, 0.35), filter 1s; }
 body.warping .warp-flash { animation: warp-flash 0.95s ease-in forwards; }
 @keyframes warp-out {
-  to { opacity: 0; transform: scale(1.12); filter: blur(8px); }
+  to { opacity: 0; transform: scale(1.035); }
 }
 @keyframes warp-flash {
   0%, 40% { opacity: 0; }
   100% { opacity: 1; }
+}
+/* parked in the back/forward cache while you are in an app */
+body.warp-hold .shell { opacity: 0; }
+body.warp-hold .warp-flash { opacity: 1; }
+/* coming back: out of the flash, the page settles into place */
+body.warp-return .warp-flash { animation: warp-flash-out 0.8s ease-out both; }
+body.warp-return .shell { animation: warp-back 0.8s var(--ease-out) 0.08s both; }
+@keyframes warp-flash-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes warp-back {
+  from { opacity: 0; transform: scale(1.035); }
+  to { opacity: 1; transform: none; }
 }
 body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
 
@@ -1406,7 +1438,7 @@ body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }
   .card--app .card-meta:not(:has(.card-recent:not(:empty))) { display: none; }
   .card--app .card-go { display: none; }
   .card--app .fav { top: 50%; right: 8px; transform: translateY(-50%); }
-  .card--app .fav:hover { transform: translateY(-50%) scale(1.1); }
+  @media (hover: hover) { .card--app .fav:hover { transform: translateY(-50%) scale(1.1); } }
   .card--app .fav { opacity: 0.7; }
 
   .card--game {
