@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- App icon: the Scent flacon (same drawing as src/components/Logo.jsx)
+       on a deep espresso ground with a fine gold ring. iOS/Android round the
+       corners themselves, so the ground stays full-bleed. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="78%">
+      <stop offset="0%" stop-color="#5c4030"/>
+      <stop offset="55%" stop-color="#35251c"/>
+      <stop offset="100%" stop-color="#1e1410"/>
+    </radialGradient>
+    <radialGradient id="aura" cx="50%" cy="58%" r="45%">
+      <stop offset="0%" stop-color="#f3d38c" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#f3d38c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3dea0" stop-opacity="0.75"/>
+      <stop offset="50%" stop-color="#9a7425" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f3dea0" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8a6a24"/>
+      <stop offset="28%" stop-color="#e9cf8a"/>
+      <stop offset="50%" stop-color="#c49a48"/>
+      <stop offset="78%" stop-color="#f3dea0"/>
+      <stop offset="100%" stop-color="#7d5e1f"/>
+    </linearGradient>
+    <linearGradient id="goldv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1d894"/>
+      <stop offset="55%" stop-color="#b8903f"/>
+      <stop offset="100%" stop-color="#7d5e1f"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="55%" stop-color="#f4e6c8"/>
+      <stop offset="100%" stop-color="#e2c690"/>
+    </linearGradient>
+    <linearGradient id="juice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0c878"/>
+      <stop offset="55%" stop-color="#d59a3c"/>
+      <stop offset="100%" stop-color="#9c6a1c"/>
+    </linearGradient>
+    <radialGradient id="medal" cx="0.38" cy="0.32" r="0.8">
+      <stop offset="0%" stop-color="#fbe7b0"/>
+      <stop offset="55%" stop-color="#d6ad5a"/>
+      <stop offset="100%" stop-color="#9a7425"/>
+    </radialGradient>
+    <linearGradient id="wisp" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#e9cf8a"/>
+      <stop offset="100%" stop-color="#e9cf8a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect x="30" y="30" width="452" height="452" rx="96" fill="none" stroke="url(#ring)" stroke-width="4"/>
+  <circle cx="256" cy="300" r="200" fill="url(#aura)"/>
+
+  <g transform="translate(91 58) scale(3.3)">
+    <g fill="none" stroke="url(#wisp)" stroke-linecap="round">
+      <path d="M50 26 C45 21 55 16 50 10 C46 6 51 3 50 1" stroke-width="1.6"/>
+      <path d="M44 26 C38 22 44 16 39 11" stroke-width="1.1"/>
+      <path d="M56 26 C62 22 56 16 61 11" stroke-width="1.1"/>
+    </g>
+
+    <rect x="37" y="27" width="26" height="17" rx="3" fill="url(#gold)"/>
+    <g stroke="#6f5219" stroke-opacity="0.35" stroke-width="0.7">
+      <line x1="41" y1="29.5" x2="41" y2="42"/>
+      <line x1="45.5" y1="29.5" x2="45.5" y2="42"/>
+      <line x1="50" y1="29.5" x2="50" y2="42"/>
+      <line x1="54.5" y1="29.5" x2="54.5" y2="42"/>
+      <line x1="59" y1="29.5" x2="59" y2="42"/>
+    </g>
+    <rect x="37" y="27" width="26" height="3.2" rx="1.6" fill="#fff4d2" opacity="0.55"/>
+    <rect x="33" y="43" width="34" height="5.5" rx="2" fill="url(#goldv)"/>
+    <rect x="42" y="48" width="16" height="6" fill="url(#glass)" stroke="#b08640" stroke-width="0.8"/>
+
+    <path d="M22 66 L33 55 L67 55 L78 66 L78 104 L67 115 L33 115 L22 104 Z" fill="url(#glass)" stroke="#a67c33" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M26.5 74 Q50 69 73.5 74 L73.5 102.2 L65.2 110.5 L34.8 110.5 L26.5 102.2 Z" fill="url(#juice)"/>
+    <path d="M27.5 74 Q50 69.6 72.5 74" fill="none" stroke="#fff1c9" stroke-opacity="0.8" stroke-width="0.9"/>
+    <path d="M27 67.5 L35 59.5 L65 59.5 L73 67.5 L73 102.5 L65 110.5 L35 110.5 L27 102.5 Z" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="0.8"/>
+    <g stroke="#ffffff" stroke-opacity="0.55" stroke-width="0.8">
+      <line x1="33" y1="55" x2="35" y2="59.5"/>
+      <line x1="67" y1="55" x2="65" y2="59.5"/>
+      <line x1="22" y1="66" x2="27" y2="67.5"/>
+      <line x1="78" y1="66" x2="73" y2="67.5"/>
+      <line x1="22" y1="104" x2="27" y2="102.5"/>
+      <line x1="78" y1="104" x2="73" y2="102.5"/>
+      <line x1="33" y1="115" x2="35" y2="110.5"/>
+      <line x1="67" y1="115" x2="65" y2="110.5"/>
+    </g>
+    <path d="M29.5 70 L33 66.5 L33 99 L29.5 101.5 Z" fill="#ffffff" opacity="0.45"/>
+
+    <circle cx="50" cy="91" r="12.5" fill="url(#medal)" stroke="#8a6a24" stroke-width="0.8"/>
+    <circle cx="50" cy="91" r="10.4" fill="none" stroke="#fff4d6" stroke-opacity="0.75" stroke-width="0.6"/>
+    <text x="50" y="97.8" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-weight="700" fill="#7d5e1f" opacity="0.45">S</text>
+    <text x="50" y="97.2" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-weight="700" fill="#fffaf0">S</text>
+
+    <path d="M69 59 C69.5 62 70 62.5 73 63 C70 63.5 69.5 64 69 67 C68.5 64 68 63.5 65 63 C68 62.5 68.5 62 69 59 Z" fill="#ffffff"/>
+    <ellipse cx="50" cy="117.5" rx="24" ry="2.2" fill="#000000" opacity="0.25"/>
+  </g>
+</svg>

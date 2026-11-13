@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Starport app icon. Full-bleed so iOS/Android can round or mask it; the mark stays inside the safe zone. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="80%">
+      <stop offset="0%" stop-color="#1e1856"/>
+      <stop offset="55%" stop-color="#0c0f2e"/>
+      <stop offset="100%" stop-color="#050816"/>
+    </radialGradient>
+    <radialGradient id="aurora" cx="30%" cy="22%" r="60%">
+      <stop offset="0%" stop-color="#39f0b8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#39f0b8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aurora2" cx="78%" cy="80%" r="55%">
+      <stop offset="0%" stop-color="#b46cff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#b46cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9fe8ff" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#7c6cff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#7c6cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="22%" stop-color="#c9f3ff"/>
+      <stop offset="58%" stop-color="#7d86ff"/>
+      <stop offset="100%" stop-color="#2b1c6e"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6ff7d4"/>
+      <stop offset="50%" stop-color="#9d8bff"/>
+      <stop offset="100%" stop-color="#ff7ac6"/>
+    </linearGradient>
+    <clipPath id="front"><rect x="0" y="256" width="512" height="256"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#aurora)"/>
+  <rect width="512" height="512" fill="url(#aurora2)"/>
+  <g fill="#fff">
+    <circle cx="88" cy="96" r="3" opacity=".8"/>
+    <circle cx="420" cy="70" r="2.4" opacity=".6"/>
+    <circle cx="452" cy="300" r="2.6" opacity=".7"/>
+    <circle cx="70" cy="380" r="2.2" opacity=".5"/>
+    <circle cx="150" cy="450" r="2" opacity=".6"/>
+    <circle cx="380" cy="440" r="3" opacity=".7"/>
+    <circle cx="140" cy="170" r="1.8" opacity=".5"/>
+  </g>
+  <circle cx="256" cy="256" r="190" fill="url(#glow)"/>
+  <g transform="rotate(-18 256 256)">
+    <ellipse cx="256" cy="256" rx="172" ry="54" fill="none" stroke="url(#ring)" stroke-width="18" opacity="0.5"/>
+  </g>
+  <circle cx="256" cy="256" r="86" fill="url(#core)"/>
+  <ellipse cx="228" cy="222" rx="28" ry="16" fill="#fff" opacity="0.5" transform="rotate(-30 228 222)"/>
+  <g transform="rotate(-18 256 256)">
+    <ellipse cx="256" cy="256" rx="172" ry="54" fill="none" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" clip-path="url(#front)"/>
+    <circle cx="428" cy="256" r="13" fill="#fff"/>
+  </g>
+  <path d="M362 112 L370 142 L400 150 L370 158 L362 188 L354 158 L324 150 L354 142 Z" fill="#fff"/>
+</svg>
