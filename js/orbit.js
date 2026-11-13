@@ -15,6 +15,13 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
   let speed = 1; // eased towards 0 while a planet is hovered/focused
   let hold = 0;
   let frozen = false;
+  let ringAnims = [];
+
+  // Saturn ring poses: at rest (same as the CSS), arriving and leaving
+  const RING_REST = 'translate(-50%, -50%) rotate(-18deg) scale(1)';
+  const RING_ARRIVE = 'translate(-50%, -50%) rotate(-62deg) scale(0.35)';
+  const RING_GONE = 'translate(-50%, -50%) rotate(14deg) scale(0.4)';
+  const ringEls = () => [...planetsEl.querySelectorAll('.planet-ring')];
 
   const apps = destinations.filter((d) => d.kind === 'app');
   const games = destinations.filter((d) => d.kind === 'game');
@@ -155,6 +162,54 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     /** Let go again: the orbit picks up speed gently. */
     unfreeze() {
       frozen = false;
+    },
+    /**
+     * Saturn rings of the game planets. They are only shown while a planet
+     * sits still in its orbit: they spin away before an icon leaves its
+     * planet and swoop back in once an icon has landed.
+     */
+    hideRings({ instant = false, speed = 1 } = {}) {
+      const els = ringEls();
+      ringAnims.forEach((a) => a.cancel());
+      if (instant || reducedMotion) {
+        els.forEach((el) => (el.style.opacity = '0'));
+        return Promise.resolve();
+      }
+      ringAnims = els.map((el) =>
+        el.animate(
+          [
+            { opacity: getComputedStyle(el).opacity, transform: RING_REST },
+            { opacity: 0, transform: RING_GONE },
+          ],
+          { duration: 280 * speed, easing: 'cubic-bezier(0.55, 0, 0.8, 0.3)', fill: 'forwards' },
+        ),
+      );
+      return Promise.all(ringAnims.map((a) => a.finished.catch(() => {}))).then(() => {
+        els.forEach((el) => (el.style.opacity = '0'));
+        ringAnims.forEach((a) => a.cancel());
+        ringAnims = [];
+      });
+    },
+    showRings({ instant = false, speed = 1 } = {}) {
+      const els = ringEls();
+      ringAnims.forEach((a) => a.cancel());
+      els.forEach((el) => (el.style.opacity = ''));
+      if (instant || reducedMotion) return Promise.resolve();
+      ringAnims = els.map((el) => {
+        // the back half of a ring is fainter than the front; land on each one's own opacity
+        const rest = getComputedStyle(el).opacity;
+        const planet = planets.findIndex((p) => p.el.contains(el));
+        const order = planets.filter((p) => p.ring === 'outer').indexOf(planets[planet]);
+        return el.animate(
+          [
+            { opacity: 0, transform: RING_ARRIVE },
+            { opacity: rest, offset: 0.45 },
+            { opacity: rest, transform: RING_REST },
+          ],
+          { duration: 720 * speed, delay: Math.max(0, order) * 110 * speed, easing: 'cubic-bezier(0.34, 1.45, 0.64, 1)', fill: 'backwards' },
+        );
+      });
+      return Promise.all(ringAnims.map((a) => a.finished.catch(() => {}))).then(() => (ringAnims = []));
     },
     setFavourites(favs) {
       for (const p of planets) {
