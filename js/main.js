@@ -3,6 +3,7 @@ import { startTheme, currentHour } from './theme.js';
 import { createSky } from './sky.js';
 import { createSearch } from './search.js';
 import { createOrbit } from './orbit.js';
+import { flyIcons } from './flight.js';
 import * as sound from './sound.js';
 
 // ---------------------------------------------------------------------------
@@ -108,7 +109,7 @@ function cardHTML(d, index) {
              style="--accent:${d.accent};--accent2:${d.accent2};--i:${index}">
       <span class="card-glow" aria-hidden="true"></span>
       ${game ? sceneHTML(d.scene || 'stars') : ''}
-      <div class="card-icon" style="view-transition-name: icon-${d.id}">
+      <div class="card-icon">
         <img src="${esc(d.icon)}" alt="" width="128" height="128" decoding="async" />
       </div>
       <div class="card-body">
@@ -132,7 +133,7 @@ function tileHTML(d, index) {
              style="--accent:${d.accent};--accent2:${d.accent2};--i:${index}">
       <span class="card-glow" aria-hidden="true"></span>
       ${game ? sceneHTML(d.scene || 'stars') : ''}
-      <div class="card-icon" style="view-transition-name: icon-${d.id}">
+      <div class="card-icon">
         <img src="${esc(d.icon)}" alt="" width="128" height="128" decoding="async" />
       </div>
       <div class="tile-body">
@@ -345,8 +346,8 @@ const orbit = createOrbit({
 orbit.setFavourites(state.favourites);
 
 const viewSwitch = $('#viewSwitch');
-function syncSwitch() {
-  const btn = viewSwitch.querySelector(`[data-view="${state.view}"]`);
+function syncSwitch(view = state.view) {
+  const btn = viewSwitch.querySelector(`[data-view="${view}"]`);
   viewSwitch.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
   viewSwitch.style.setProperty('--thumb-x', `${btn.offsetLeft - 3}px`);
   viewSwitch.style.setProperty('--thumb-w', `${btn.offsetWidth}px`);
@@ -362,47 +363,65 @@ function applyView() {
   else orbit.stop();
 }
 
-/*
- * Icons fly from card to tile to planet with a view transition. Square icons
- * and round planets differ in shape, so the clip of each flying icon is
- * animated from rounded-square to circle (or back). The selectors name each
- * icon, so they are generated from the destination list.
- */
-{
-  const pairs = (mode) => destinations.map((d) => `:root[data-vt="${mode}"]::view-transition-image-pair(icon-${d.id})`).join(',\n');
-  const style = document.createElement('style');
-  style.textContent = `
-${pairs('round')} { overflow: clip; animation: vt-round var(--vt-dur) var(--vt-ease) both; }
-${pairs('square')} { overflow: clip; animation: vt-square var(--vt-dur) var(--vt-ease) both; }`;
-  document.head.appendChild(style);
+/** The icon element of a destination in a given view. */
+function iconFor(view, id) {
+  if (view === 'orbit') return orbit.elementFor(id)?.querySelector('.planet-body') ?? null;
+  return viewEls[view].querySelector(`.card[data-id="${id}"] .card-icon`);
 }
 
-function setView(view) {
-  if (view === state.view || !VIEWS.includes(view)) return;
+// ?slowmo=3 plays the view switch three times slower (handy to admire it)
+const slowmo = Math.min(10, Math.max(1, Number(new URLSearchParams(location.search).get('slowmo')) || 1));
+let switching = false;
+let queuedView = null;
+
+async function setView(view) {
+  if (!VIEWS.includes(view)) return;
+  if (switching) {
+    // mid-flight: remember only the latest choice and go there afterwards
+    queuedView = view;
+    syncSwitch(view);
+    return;
+  }
+  if (view === state.view) return;
   const from = state.view;
   state.view = view;
   store.set('view', view);
   syncSwitch();
-  if (document.startViewTransition && !reducedMotion) {
-    const root = document.documentElement;
-    root.dataset.vt = view === 'orbit' ? 'round' : from === 'orbit' ? 'square' : 'same';
-    const vt = document.startViewTransition(applyView);
-    // a transition can be skipped (e.g. the window resized mid-way); the view still switches
-    vt.ready.catch(() => {});
-    vt.finished.catch(() => {}).finally(() => delete root.dataset.vt);
-  } else {
+
+  if (reducedMotion) {
     applyView();
-    const el = viewEls[view];
-    if (!reducedMotion) {
-      el.classList.remove('view-enter');
-      void el.offsetWidth;
-      el.classList.add('view-enter');
-    }
+    return;
   }
+
+  switching = true;
+  // the greeting is more compact in orbit view, so it fades along instead of jumping
+  const hero = $('.hero');
+  const heroChanges = (from === 'orbit') !== (view === 'orbit');
+  orbit.freeze(); // planets hold still while icons fly to or from them
+  try {
+    await flyIcons({
+      ids: destinations.map((d) => d.id),
+      srcOf: (id) => byId(id).icon,
+      fromIcon: (id) => iconFor(from, id),
+      toIcon: (id) => iconFor(view, id),
+      apply: applyView,
+      fadeOut: [viewEls[from], ...(heroChanges ? [hero] : [])],
+      fadeIn: () => [viewEls[view], ...(heroChanges ? [hero] : [])],
+      speed: slowmo,
+    });
+  } finally {
+    orbit.unfreeze();
+    switching = false;
+  }
+
+  const next = queuedView;
+  queuedView = null;
+  if (next && next !== state.view) setView(next);
+  else syncSwitch();
 }
 
 function stepView(step) {
-  const i = VIEWS.indexOf(state.view);
+  const i = VIEWS.indexOf(queuedView ?? state.view);
   setView(VIEWS[(i + step + VIEWS.length) % VIEWS.length]);
 }
 
@@ -414,13 +433,13 @@ viewSwitch.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     e.preventDefault();
     stepView(e.key === 'ArrowRight' ? 1 : -1);
-    viewSwitch.querySelector(`[data-view="${state.view}"]`).focus();
+    viewSwitch.querySelector(`[data-view="${queuedView ?? state.view}"]`).focus();
   }
 });
 applyView();
 syncSwitch();
-window.addEventListener('resize', syncSwitch);
-document.fonts?.ready.then(syncSwitch);
+window.addEventListener('resize', () => syncSwitch(queuedView ?? state.view));
+document.fonts?.ready.then(() => syncSwitch());
 
 // ---------------------------------------------------------------------------
 // warp launch

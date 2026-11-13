@@ -14,6 +14,7 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
   let time = 0;
   let speed = 1; // eased towards 0 while a planet is hovered/focused
   let hold = 0;
+  let frozen = false;
 
   const apps = destinations.filter((d) => d.kind === 'app');
   const games = destinations.filter((d) => d.kind === 'game');
@@ -22,7 +23,7 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     const ring = d.kind === 'game';
     return `
       ${ring ? '<span class="planet-ring back" aria-hidden="true"></span>' : ''}
-      <span class="planet-body" style="view-transition-name: icon-${d.id}"><img src="${esc(d.icon)}" alt="" /></span>
+      <span class="planet-body"><img src="${esc(d.icon)}" alt="" /></span>
       ${ring ? '<span class="planet-ring front" aria-hidden="true"></span>' : ''}
       <span class="planet-label">${esc(d.name)}<small>${esc(d.kicker)}</small></span>`;
   }
@@ -120,10 +121,12 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     if (!running) return;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    const target = hold > 0 ? 0 : 1;
-    speed += (target - speed) * (1 - Math.exp(-dt * 5));
-    time += dt * speed;
-    place();
+    if (!frozen) {
+      const target = hold > 0 ? 0 : 1;
+      speed += (target - speed) * (1 - Math.exp(-dt * 5));
+      time += dt * speed;
+      place();
+    }
     raf = requestAnimationFrame(frame);
   }
 
@@ -143,6 +146,15 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
       running = false;
       cancelAnimationFrame(raf);
       raf = 0;
+    },
+    /** Hold every planet exactly where it is (icons are flying to or from them). */
+    freeze() {
+      frozen = true;
+      speed = 0;
+    },
+    /** Let go again: the orbit picks up speed gently. */
+    unfreeze() {
+      frozen = false;
     },
     setFavourites(favs) {
       for (const p of planets) {
