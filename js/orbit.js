@@ -4,8 +4,9 @@
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const ORBIT_SPEED = 0.075; // radians per second: one lap in about 84 seconds
 
-export function createOrbit({ container, planetsEl, ringsSvg, destinations, reducedMotion, getPointer }) {
+export function createOrbit({ container, planetsEl, ringsSvg, destinations, reducedMotion, finePointer = true, getPointer }) {
   const planets = [];
   let geo = null;
   let raf = 0;
@@ -48,10 +49,13 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
         a.style.setProperty('--accent2', d.accent2);
         a.innerHTML = planetHTML(d);
         planetsEl.appendChild(a);
-        const offset = ring === 'inner' ? 0.35 : 1.05;
+        // Both rings turn at the same speed and every game sits exactly halfway
+        // between two apps, so planets never slide over each other.
+        const offset = ring === 'inner' ? 0.35 : 0.35 + Math.PI / Math.max(1, apps.length);
         planets.push({ el: a, d, ring, base: offset + (i / list.length) * Math.PI * 2 });
-        a.addEventListener('pointerenter', () => hold++);
-        a.addEventListener('pointerleave', () => (hold = Math.max(0, hold - 1)));
+        // hovering holds the orbit still (mouse only: a tap on a phone just launches)
+        a.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && hold++);
+        a.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && (hold = Math.max(0, hold - 1)));
         a.addEventListener('focus', () => hold++);
         a.addEventListener('blur', () => (hold = Math.max(0, hold - 1)));
       });
@@ -63,7 +67,8 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     const W = container.clientWidth;
     if (!W) return;
     const portrait = W < 640;
-    const station = portrait ? clamp(W * 0.22, 72, 96) : clamp(W * 0.12, 96, 146);
+    // the station stays small enough for planets to pass behind it without touching
+    const station = portrait ? clamp(W * 0.19, 62, 84) : clamp(W * 0.11, 84, 140);
     const appSize = portrait ? clamp(W * 0.13, 42, 52) : clamp(W * 0.07, 56, 88);
     const gameSize = portrait ? clamp(W * 0.155, 50, 62) : clamp(W * 0.088, 68, 112);
     const tilt = ((portrait ? -16 : -10) * Math.PI) / 180;
@@ -105,18 +110,18 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     const sin = Math.sin(geo.tilt);
     for (const p of planets) {
       const e = p.ring === 'inner' ? geo.inner : geo.outer;
-      const sp = p.ring === 'inner' ? 0.1 : 0.055;
-      const th = p.base + time * sp;
+      const th = p.base + time * ORBIT_SPEED;
       const ex = e.rx * Math.cos(th);
       const ey = e.ry * Math.sin(th);
       const depth = Math.sin(th); // -1 = far side, 1 = near side
       const par = p.ring === 'inner' ? 8 : 14;
       const x = geo.cx + ex * cos - ey * sin - ptr.x * par;
       const y = geo.cy + ex * sin + ey * cos - ptr.y * par * 0.7;
-      const hovered = p.el.matches(':hover, :focus-visible');
-      const scale = hovered ? 1.04 : 0.8 + 0.2 * ((depth + 1) / 2);
+      const hovered = (finePointer && p.el.matches(':hover')) || p.el.matches(':focus-visible');
+      const launching = p.el.classList.contains('launching');
+      const scale = hovered || launching ? 1.04 : 0.8 + 0.2 * ((depth + 1) / 2);
       p.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
-      p.el.style.zIndex = hovered ? 100 : String(Math.round(50 + depth * 20));
+      p.el.style.zIndex = launching ? 200 : hovered ? 100 : String(Math.round(50 + depth * 20));
       p.el.style.filter = hovered ? '' : `brightness(${(0.68 + 0.32 * ((depth + 1) / 2)).toFixed(3)})`;
       // names fade out on the far side of the orbit and come back as planets swing round
       p.el.style.setProperty('--label-o', clamp((depth + 0.45) / 0.6, 0, 1).toFixed(2));
@@ -162,6 +167,14 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     /** Let go again: the orbit picks up speed gently. */
     unfreeze() {
       frozen = false;
+    },
+    /** Forget any hover hold (e.g. after coming back to the page). */
+    release() {
+      hold = 0;
+    },
+    /** Put planets in place right now (e.g. to bring a launching planet to the front). */
+    refresh() {
+      place();
     },
     /**
      * Saturn rings of the game planets. They are only shown while a planet
