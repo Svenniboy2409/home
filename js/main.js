@@ -344,6 +344,14 @@ const orbit = createOrbit({
   reducedMotion,
   finePointer,
   getPointer: () => sky.pointer,
+  // pointing at a planet plays its own soft note (only when ambient sound is on)
+  onHover: (d) => {
+    try {
+      sound.ping(destinations.indexOf(d));
+    } catch {
+      /* sound is a bonus */
+    }
+  },
 });
 orbit.setFavourites(state.favourites);
 
@@ -502,6 +510,15 @@ async function launch(d, originEl, event) {
       if (state.view === 'orbit') orbit.freeze(); // the tapped planet holds still
       originEl?.classList.add('launching');
       orbit.refresh();
+      if (originEl?.classList.contains('planet')) {
+        // from the orbit: the station fires a beam at the planet first, then the warp
+        try {
+          sound.ping(destinations.indexOf(d));
+        } catch {
+          /* sound is a bonus */
+        }
+        await orbit.beam(d.id);
+      }
       try {
         sound.whoosh();
       } catch {
