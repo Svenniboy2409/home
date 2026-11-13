@@ -4,7 +4,8 @@
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const ORBIT_SPEED = 0.075; // radians per second: one lap in about 84 seconds
+// radians per second: the inner ring of apps turns faster than the outer ring of games
+const SPEED = { inner: 0.1, outer: 0.055 };
 
 export function createOrbit({ container, planetsEl, ringsSvg, destinations, reducedMotion, finePointer = true, getPointer }) {
   const planets = [];
@@ -49,9 +50,7 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
         a.style.setProperty('--accent2', d.accent2);
         a.innerHTML = planetHTML(d);
         planetsEl.appendChild(a);
-        // Both rings turn at the same speed and every game sits exactly halfway
-        // between two apps, so planets never slide over each other.
-        const offset = ring === 'inner' ? 0.35 : 0.35 + Math.PI / Math.max(1, apps.length);
+        const offset = ring === 'inner' ? 0.35 : 1.05;
         planets.push({ el: a, d, ring, base: offset + (i / list.length) * Math.PI * 2 });
         // hovering holds the orbit still (mouse only: a tap on a phone just launches)
         a.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && hold++);
@@ -110,7 +109,7 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
     const sin = Math.sin(geo.tilt);
     for (const p of planets) {
       const e = p.ring === 'inner' ? geo.inner : geo.outer;
-      const th = p.base + time * ORBIT_SPEED;
+      const th = p.base + time * SPEED[p.ring];
       const ex = e.rx * Math.cos(th);
       const ey = e.ry * Math.sin(th);
       const depth = Math.sin(th); // -1 = far side, 1 = near side
@@ -121,7 +120,10 @@ export function createOrbit({ container, planetsEl, ringsSvg, destinations, redu
       const launching = p.el.classList.contains('launching');
       const scale = hovered || launching ? 1.04 : 0.8 + 0.2 * ((depth + 1) / 2);
       p.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
-      p.el.style.zIndex = launching ? 200 : hovered ? 100 : String(Math.round(50 + depth * 20));
+      // Stack planets by how close they are to you: the lower on the (tilted) orbit,
+      // the nearer. This works across both rings, so when two planets overlap the one
+      // drawn in front is also the one a tap or click reaches. The station sits at 1000.
+      p.el.style.zIndex = launching ? 4000 : hovered ? 3000 : String(Math.round(1000 + ey * 2));
       p.el.style.filter = hovered ? '' : `brightness(${(0.68 + 0.32 * ((depth + 1) / 2)).toFixed(3)})`;
       // names fade out on the far side of the orbit and come back as planets swing round
       p.el.style.setProperty('--label-o', clamp((depth + 0.45) / 0.6, 0, 1).toFixed(2));
