@@ -2,7 +2,7 @@
 // Links to the apps and games are never intercepted.
 // Bump VERSION whenever you change files, so phones pick up the new version.
 
-const VERSION = 'starport-v2';
+const VERSION = 'starport-v3';
 const SHELL = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const SHELL = [
   './js/theme.js',
   './js/sky.js',
   './js/orbit.js',
+  './js/flight.js',
   './js/search.js',
   './js/sound.js',
   './manifest.webmanifest',
