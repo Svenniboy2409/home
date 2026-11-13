@@ -172,3 +172,27 @@ export function sparkle() {
     osc.stop(s + 0.65);
   });
 }
+
+// A soft ping when you point at a planet: each planet has its own note
+// (a pentatonic scale, so any order of pings sounds pleasant).
+const PING_NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+export function ping(index = 0) {
+  if (!enabled || !ctx) return;
+  const t = ctx.currentTime;
+  const f = PING_NOTES[((index % PING_NOTES.length) + PING_NOTES.length) % PING_NOTES.length];
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.07, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+  g.connect(fx);
+  for (const [type, mult, level] of [['sine', 1, 1], ['triangle', 2, 0.25]]) {
+    const osc = ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.value = f * mult;
+    const lv = ctx.createGain();
+    lv.gain.value = level;
+    osc.connect(lv).connect(g);
+    osc.start(t);
+    osc.stop(t + 1.15);
+  }
+}

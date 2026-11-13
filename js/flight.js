@@ -21,7 +21,8 @@ function measure(el) {
   const r = el.getBoundingClientRect();
   const round = el.classList.contains('planet-body');
   // planets get a brightness filter for depth on their parent link
-  const filter = round ? getComputedStyle(el.parentElement).filter : 'none';
+  const planetStyle = round ? getComputedStyle(el.parentElement) : null;
+  const filter = round ? planetStyle.filter : 'none';
   return {
     left: r.left,
     top: r.top,
@@ -32,6 +33,8 @@ function measure(el) {
     zoom: round ? 1.18 : 1, // planets show the icon slightly zoomed in
     shadow: getComputedStyle(el).boxShadow,
     brightness: /brightness\(([\d.]+)\)/.exec(filter)?.[1] ?? '1',
+    // which side of the planet the station lights up
+    light: round ? [planetStyle.getPropertyValue('--lx').trim(), planetStyle.getPropertyValue('--ly').trim()] : null,
   };
 }
 
@@ -85,6 +88,10 @@ export async function flyIcons({ ids, srcOf, fromIcon, toIcon, apply, fadeOut, f
     const shade = document.createElement('span');
     shade.className = 'flyer-shade';
     shade.style.opacity = from.round ? '1' : '0';
+    if (from.light) {
+      shade.style.setProperty('--lx', from.light[0]);
+      shade.style.setProperty('--ly', from.light[1]);
+    }
     flyer.append(img, shade);
     layer.appendChild(flyer);
     flights.push({ id, el, from, flyer, img, shade });
@@ -117,6 +124,11 @@ export async function flyIcons({ ids, srcOf, fromIcon, toIcon, apply, fadeOut, f
     if (!f.target) continue;
     f.to = measure(f.target);
     f.target.style.visibility = 'hidden';
+    if (f.to.light) {
+      // landing on a planet: shade it from the same side the station lights it
+      f.shade.style.setProperty('--lx', f.to.light[0]);
+      f.shade.style.setProperty('--ly', f.to.light[1]);
+    }
   }
 
   // 3. fly
