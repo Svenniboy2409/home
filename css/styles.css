@@ -943,7 +943,7 @@ main { flex: 1; }
   user-select: none;
 }
 @media (hover: hover) and (pointer: fine) {
-  .orbit { cursor: grab; }
+  .orbit.can-drag { cursor: grab; }
   .orbit.dragging { cursor: grabbing; }
   .orbit .planet-body, .orbit .station { cursor: pointer; }
 }
@@ -980,7 +980,7 @@ main { flex: 1; }
 .orbit.quiet .orbit-tails,
 .orbit.quiet .pulses { opacity: 0; transition-duration: 0.2s; }
 
-/* effects above the planets: guide line to the hovered planet, the launch beam */
+/* effects above the planets: guide line to the hovered planet */
 .orbit-fx {
   position: absolute;
   inset: 0;
@@ -1001,22 +1001,6 @@ main { flex: 1; }
 }
 .orbit-fx .guide.on { opacity: 0.6; }
 @keyframes guide-flow { to { stroke-dashoffset: -9; } }
-.orbit-fx .beam,
-.orbit-fx .beam-glow {
-  stroke-linecap: round;
-  opacity: 0;
-}
-.orbit-fx .beam { stroke: color-mix(in srgb, var(--beam2, #fff) 55%, white); stroke-width: 3; }
-.orbit-fx .beam-glow { stroke: var(--beam, #9fe8ff); stroke-width: 12; }
-.orbit-fx .beam-hit {
-  fill: none;
-  stroke: color-mix(in srgb, var(--beam2, #fff) 60%, white);
-  stroke-width: 3;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
 /* hologram card for the planet under the mouse */
 .holo {
   position: absolute;

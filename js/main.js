@@ -511,13 +511,12 @@ async function launch(d, originEl, event) {
       originEl?.classList.add('launching');
       orbit.refresh();
       if (originEl?.classList.contains('planet')) {
-        // from the orbit: the station fires a beam at the planet first, then the warp
+        // a tapped planet plays its own note (only when ambient sound is on)
         try {
           sound.ping(destinations.indexOf(d));
         } catch {
           /* sound is a bonus */
         }
-        await orbit.beam(d.id);
       }
       try {
         sound.whoosh();
