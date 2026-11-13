@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#2c2016"/>
+      <stop offset="55%" stop-color="#16110d"/>
+      <stop offset="100%" stop-color="#0b0908"/>
+    </radialGradient>
+    <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="130" y1="120" x2="380" y2="380">
+      <stop offset="0%" stop-color="#f5cf8b"/>
+      <stop offset="50%" stop-color="#e0a458"/>
+      <stop offset="100%" stop-color="#b98a44"/>
+    </linearGradient>
+    <linearGradient id="drink" gradientUnits="userSpaceOnUse" x1="256" y1="174" x2="256" y2="262">
+      <stop offset="0%" stop-color="#f0be7c"/>
+      <stop offset="100%" stop-color="#d99b4e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="230" r="196" fill="#e0a458" opacity="0.05"/>
+
+  <!-- drink -->
+  <path d="M166 174 L346 174 L256 262 Z" fill="url(#drink)"/>
+  <path d="M166 174 H346" stroke="#f9dcac" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- glass -->
+  <g fill="none" stroke="url(#gold)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 158 H364 L256 262 L148 158 Z"/>
+    <path d="M256 262 V360"/>
+    <path d="M198 366 H314"/>
+  </g>
+
+  <!-- garnish pick + berry -->
+  <path d="M300 170 L330 150" stroke="url(#gold)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="338" cy="143" r="15" fill="#f0be7c" stroke="#b98a44" stroke-width="4"/>
+
+  <!-- sparkles -->
+  <path d="M150 110 L155.7 134.3 L180 140 L155.7 145.7 L150 170 L144.3 145.7 L120 140 L144.3 134.3 Z" fill="#f5cf8b"/>
+  <path d="M352 280 L355.2 292.8 L368 296 L355.2 299.2 L352 312 L348.8 299.2 L336 296 L348.8 292.8 Z" fill="#e0a458"/>
+</svg>
