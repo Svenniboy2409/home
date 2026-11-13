@@ -954,7 +954,7 @@ main { flex: 1; }
   position: absolute;
   left: 50%;
   top: 50%;
-  z-index: 50;
+  z-index: 1000;
   width: var(--station, 140px);
   height: var(--station, 140px);
   padding: 0;
@@ -976,6 +976,7 @@ main { flex: 1; }
 @media (hover: hover) { .station:hover img { transform: scale(1.06) rotate(-6deg); } }
 .station.boop img { animation: boop 0.45s var(--ease-spring); }
 .station-halo {
+  pointer-events: none;
   position: absolute;
   inset: 18%;
   border-radius: 50%;
@@ -991,6 +992,9 @@ main { flex: 1; }
 .planets { position: absolute; inset: 0; }
 
 .planet {
+  /* the link's square box ignores taps: only the round planet body (below) takes them,
+     so a tap on an overlap always opens the planet you see in front */
+  pointer-events: none;
   position: absolute;
   left: 0;
   top: 0;
@@ -1004,6 +1008,7 @@ main { flex: 1; }
   outline: none;
 }
 .planet-body {
+  pointer-events: auto;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -1301,30 +1306,39 @@ body.is-orbit .recent { margin-top: 18px; }
    ========================================================================== */
 
 .warp-flash {
-  /* much bigger than the screen, so it also fills the space behind the browser's
-     toolbars and any overscroll: no hard edges anywhere */
+  /* exactly as wide as the screen: anything wider can make Safari nudge the page
+     sideways. The space behind the browser's toolbars is coloured by html below. */
   position: fixed;
-  inset: -50vmax;
+  inset: 0;
   z-index: 200;
   pointer-events: none;
   opacity: 0;
   background:
-    radial-gradient(circle 80vmax at calc(var(--ox, 50vw) + 50vmax) calc(var(--oy, 50vh) + 50vmax),
+    radial-gradient(circle 80vmax at var(--ox, 50%) var(--oy, 50%),
       #ffffff 0%,
       color-mix(in srgb, var(--flash, #9fe8ff) 70%, white) 16%,
       color-mix(in srgb, var(--flash, #9fe8ff) 60%, var(--base)) 50%,
       var(--base) 100%);
 }
-/* the page fades and drifts a little towards the tapped spot; the stars do the big motion */
+/* the page fades and shrinks a little towards the tapped spot (never wider than the
+   screen, so nothing can shift sideways); the stars do the big motion */
 body.warping .shell { animation: warp-out 0.75s cubic-bezier(0.45, 0, 0.75, 0.5) 0.05s forwards; pointer-events: none; }
 body.warping .aurora { filter: brightness(1.4) saturate(1.25); transform: scale(1.08); transition: transform 1s cubic-bezier(0.55, 0, 0.85, 0.35), filter 1s; }
 body.warping .warp-flash { animation: warp-flash 0.95s ease-in forwards; }
 @keyframes warp-out {
-  to { opacity: 0; transform: scale(1.035); }
+  to { opacity: 0; transform: scale(0.97); }
 }
 @keyframes warp-flash {
   0%, 40% { opacity: 0; }
   100% { opacity: 1; }
+}
+/* behind the browser's toolbars and in overscroll only the page background shows:
+   tint it along with the flash so no dark band appears there */
+html { transition: background-color 0.6s ease; }
+html.warp-bg {
+  background-color: color-mix(in srgb, var(--flash, #9fe8ff) 38%, var(--base));
+  transition-duration: 0.9s;
+  transition-timing-function: ease-in;
 }
 /* parked in the back/forward cache while you are in an app */
 body.warp-hold .shell { opacity: 0; }
@@ -1337,7 +1351,7 @@ body.warp-return .shell { animation: warp-back 0.8s var(--ease-out) 0.08s both; 
   to { opacity: 0; }
 }
 @keyframes warp-back {
-  from { opacity: 0; transform: scale(1.035); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: none; }
 }
 body.warping-soft .shell { transition: opacity 0.25s; opacity: 0; }

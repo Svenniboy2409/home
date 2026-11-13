@@ -483,7 +483,9 @@ async function launch(d, originEl, event) {
     const flash = $('#warpFlash');
     flash.style.setProperty('--ox', `${x}px`);
     flash.style.setProperty('--oy', `${y}px`);
-    flash.style.setProperty('--flash', d.accent);
+    // the app's colour tints the flash and the space behind the browser's toolbars
+    document.documentElement.style.setProperty('--flash', d.accent);
+    document.documentElement.classList.add('warp-bg');
     // the page recedes gently towards the spot you tapped
     const shell = $('#shell');
     const sr = shell.getBoundingClientRect();
@@ -521,6 +523,7 @@ function resetWarp({ animate = false } = {}) {
   const body = document.body;
   const wasWarped = body.classList.contains('warping') || body.classList.contains('warp-hold');
   body.classList.remove('warping', 'warping-soft', 'warp-hold');
+  document.documentElement.classList.remove('warp-bg');
   document.querySelectorAll('.launching').forEach((el) => el.classList.remove('launching'));
   sky.reset();
   orbit.unfreeze();
