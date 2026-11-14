@@ -5,7 +5,7 @@
 //   svg.orbit-rings  glowing orbit paths, asteroid belt, light pulses, comet tails
 //   .station         the living station (dock ring, navigation lights, energy pulse)
 //   .planets         the planets (only their round bodies take taps and clicks)
-//   svg.orbit-fx     guide line to the planet under the mouse, and the launch beam
+//   svg.orbit-fx     guide line to the planet under the mouse
 //   .holo            hologram card for the planet under the mouse
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -83,7 +83,6 @@ export function createOrbit({
   let pulses = [];
   let tails = [];
   let guide = null;
-  let beamEls = null;
 
   // ---------- planets ----------
 
@@ -146,7 +145,9 @@ export function createOrbit({
     container.style.height = `${H}px`;
     container.style.setProperty('--station', `${station}px`);
 
-    geo = { W, H, cx: W / 2, cy: H / 2, tilt, inner, outer, belt, appSize, gameSize, station, portrait };
+    // dragging to spin only works on the orbits: inside the outer ring plus this thin margin
+    const dragMargin = portrait ? 14 : 20;
+    geo = { W, H, cx: W / 2, cy: H / 2, tilt, inner, outer, belt, appSize, gameSize, station, portrait, dragMargin };
     planets.forEach((p) => {
       p.size = p.ring === 'inner' ? appSize : gameSize;
       p.el.style.setProperty('--size', `${p.size}px`);
@@ -257,14 +258,7 @@ export function createOrbit({
     const { W, H } = geo;
     fxSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     fxSvg.innerHTML = '';
-    const defs = svg('defs', {}, fxSvg);
-    const blur = svg('filter', { id: 'beam-blur', x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs);
-    svg('feGaussianBlur', { stdDeviation: 4 }, blur);
     guide = svg('line', { class: 'guide', x1: 0, y1: 0, x2: 0, y2: 0 }, fxSvg);
-    const glow = svg('line', { class: 'beam-glow', filter: 'url(#beam-blur)' }, fxSvg);
-    const line = svg('line', { class: 'beam' }, fxSvg);
-    const hit = svg('circle', { class: 'beam-hit', r: 10 }, fxSvg);
-    beamEls = { glow, line, hit };
   }
 
   // ---------- every frame ----------
@@ -442,14 +436,34 @@ export function createOrbit({
     return [geo.cx + (dx / len) * r, geo.cy + (dy / len) * r];
   }
 
-  // ---------- drag the empty space to spin the system ----------
+  // ---------- drag the orbits to spin the system ----------
+
+  /** Is this spot on the orbits: inside the outer ring, plus a thin margin around it? */
+  function onOrbits(clientX, clientY) {
+    if (!geo) return false;
+    const box = container.getBoundingClientRect();
+    const dx = clientX - box.left - geo.cx;
+    const dy = clientY - box.top - geo.cy;
+    // undo the tilt of the orbit plane, then test against the (slightly widened) outer ring
+    const c = Math.cos(geo.tilt);
+    const s = Math.sin(geo.tilt);
+    const u = dx * c + dy * s;
+    const v = -dx * s + dy * c;
+    const m = geo.dragMargin;
+    return (u / (geo.outer.rx + m)) ** 2 + (v / (geo.outer.ry + m)) ** 2 <= 1;
+  }
 
   container.addEventListener('pointerdown', (e) => {
     if (frozen || e.button > 0 || !geo) return;
     if (e.target.closest('.planet-body, .station')) return;
+    if (!onOrbits(e.clientX, e.clientY)) return; // the empty space around the system stays still
     drag = { id: e.pointerId, x0: e.clientX, x: e.clientX, t: performance.now(), vel: 0, moved: false };
   });
   container.addEventListener('pointermove', (e) => {
+    if (!drag && e.pointerType === 'mouse') {
+      // show the grab hand only where a drag would actually work
+      container.classList.toggle('can-drag', !e.target.closest('.planet-body, .station') && onOrbits(e.clientX, e.clientY));
+    }
     if (!drag || e.pointerId !== drag.id) return;
     if (!drag.moved) {
       if (Math.abs(e.clientX - drag.x0) < 6) return;
@@ -485,6 +499,7 @@ export function createOrbit({
   };
   container.addEventListener('pointerup', endDrag);
   container.addEventListener('pointercancel', endDrag);
+  container.addEventListener('pointerleave', () => container.classList.remove('can-drag'));
 
   // ---------- animation loop ----------
 
@@ -540,47 +555,6 @@ export function createOrbit({
     refresh() {
       forceDecor = true;
       place();
-    },
-    /**
-     * Launch beam: a ray of light shoots from the station to the planet,
-     * then the warp can begin. Resolves when the beam has arrived.
-     */
-    beam(id) {
-      const p = planets.find((q) => q.d.id === id);
-      if (!p || !geo || !beamEls || reducedMotion) return Promise.resolve();
-      const [sx, sy] = stationEdge(p);
-      const { glow, line, hit } = beamEls;
-      for (const el of [glow, line]) {
-        el.setAttribute('x1', sx.toFixed(1));
-        el.setAttribute('y1', sy.toFixed(1));
-        el.setAttribute('x2', p.x.toFixed(1));
-        el.setAttribute('y2', p.y.toFixed(1));
-      }
-      fxSvg.style.setProperty('--beam', p.d.accent);
-      fxSvg.style.setProperty('--beam2', p.d.accent2);
-      hit.setAttribute('cx', p.x.toFixed(1));
-      hit.setAttribute('cy', p.y.toFixed(1));
-      hit.setAttribute('r', (p.size * 0.95).toFixed(1));
-      // the beam grows from the station to the planet (dash trick with the real length)
-      const L = Math.hypot(p.x - sx, p.y - sy).toFixed(1);
-      for (const el of [glow, line]) el.style.strokeDasharray = `${L} ${L}`;
-      const shoot = { duration: 240, easing: 'cubic-bezier(0.3, 0, 0.2, 1)', fill: 'forwards' };
-      const anims = [
-        line.animate([{ strokeDashoffset: L, opacity: 1 }, { strokeDashoffset: 0, opacity: 1 }], shoot),
-        glow.animate([{ strokeDashoffset: L, opacity: 0.9 }, { strokeDashoffset: 0, opacity: 0.9 }], shoot),
-        hit.animate(
-          [
-            { transform: 'scale(0)', opacity: 0 },
-            { transform: 'scale(0)', opacity: 0, offset: 0.45 },
-            { transform: 'scale(0.35)', opacity: 1, offset: 0.62 },
-            { transform: 'scale(1)', opacity: 0 },
-          ],
-          { duration: 560, fill: 'forwards' },
-        ),
-      ];
-      return new Promise((resolve) => setTimeout(resolve, 260)).finally(() =>
-        setTimeout(() => anims.forEach((a) => a.cancel()), 1600),
-      );
     },
     /**
      * Saturn rings of the game planets (and the comet tails and light pulses).
